@@ -1,0 +1,5 @@
+x <- c(1,2,3)
+y <- c("a","b","c")
+z1 <- c(TRUE,FALSE,TRUE)
+z2 <- c(T,F,T)
+class(x)

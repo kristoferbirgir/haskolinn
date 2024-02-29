@@ -1,0 +1,179 @@
+---
+title: "Fasteignaverkefni"
+author: "Kristófer Birgir Hjörleifsson (kbh15@hi.is)"
+date: "2023-03-03"
+output: 
+   rmdformats::material
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+options(scipen = 9999)
+library(tidyverse)
+library(dplyr)
+```
+
+# Hluti 1 - Gagnamöndl
+
+## Lesum inn gögnin:
+```{r}
+housing_data <- read.table(
+    "https://ahj.hi.is/husnaedisverd_2017_21.csv",
+    sep = ";",
+    header = TRUE,
+    stringsAsFactors = TRUE,
+)
+```
+## Veljum 3 hverfi:
+- Fossvogur
+- Breiðholt
+- Austur Kópavog
+```{r}
+hverfi <- c(280, 25, 320)
+housing_data <- dplyr::filter(housing_data, matssvaedi %in% hverfi)
+```
+
+## Skoðum gerð á breytum:
+```{r}
+print(str(housing_data))
+```
+Breyturnar eru réttar
+
+## Fermetraverð:
+Deilum kaupverði með stærð til að fá verð á fermetra
+```{r}
+housing_data <- housing_data %>% mutate(fermetraverd = kaupverd / birtm2)
+```
+
+## Tegund á eign:
+```{r}
+housing_data <- housing_data %>% mutate(teg_ein_s_i = case_when(
+    teg_eign %in% c("Einbýlishús", "Parhús", "Raðhús") ~ "Sérbýli",
+    teg_eign %in% c("Íbúðareign") ~ "Íbúð"
+))
+```
+
+## Hverfi:
+Skiptum á kóða fyrir hverfi og gefum viðeigandi nafn
+```{r}
+housing_data <- housing_data %>% transmute(housing_data,
+    matssvaedi = case_when(
+        matssvaedi == 280 ~ "Fossvogur",
+        matssvaedi == 25 ~ "Breiðholt",
+        matssvaedi == 320 ~ "Kópavogur Au."
+    )
+)
+```
+
+
+# Hluti 2 - Myndræn framsetning
+
+
+## Kaupverð:
+
+```{r}
+ggplot(housing_data, aes(kaupverd)) +
+    geom_histogram(
+        bins = 50,
+        col = "orange",
+    ) +
+    ggtitle("Kaupverð á eignum") +
+    xlab("Kaupverð") +
+    ylab("Fjöldi")
+```
+
+## Stærð:
+```{r}
+ggplot(housing_data, aes(birtm2)) +
+    geom_histogram(
+        bins = 50,
+        col = "blue",
+    ) +
+    ggtitle("Stærð á eignum") +
+    xlab("Stærð (mm²)") +
+    ylab("Fjöldi")
+```
+
+## Íbúð vs sérbýli í hverfum:
+
+```{r}
+
+ggplot(housing_data, aes(matssvaedi, fill = teg_ein_s_i)) +
+  geom_bar(position = "dodge") +
+  ggtitle("Fjöldi og týpa eigna eftir hverfum") +
+  xlab("Hverfi") +
+  ylab("Fjöldi") +
+  scale_fill_brewer(palette = "yellow")
+
+```
+
+## Fermetraverð eftir tegund:
+
+```{r}
+ggplot(housing_data, aes(fermetraverd, fill = teg_ein_s_i)) +
+    geom_histogram(
+        bins = 50,
+        col = "black",
+    ) +
+    ggtitle("Fermetraverð eftir tegund eigna") +
+    xlab("Verð") +
+    ylab("Fjöldi")
+```
+
+## Mynd: 
+
+```{r}
+ggplot(housing_data, aes(x = kaupverd, y = birtm2, color = teg_ein_s_i)) +
+    geom_point() +
+    facet_grid(~matssvaedi) +
+    xlab("kaupverð") +
+    ylab("stærð")
+```
+
+# Hluti 3 - Töflur
+
+## Sérbýli og íbúðir í hverfum
+```{r}
+knitr::kable(table(housing_data$matssvaedi, housing_data$teg_ein_s_i))
+```
+
+## Hlutfall sérbýla og íbúða í hverfum
+```{r}
+knitr::kable(
+    round(
+        prop.table(
+            table(
+                housing_data$matssvaedi,
+                housing_data$teg_ein_s_i
+            ),
+            1
+        ),
+        3
+    )
+)
+```
+
+```{r}
+knitr::kable(housing_data %>%
+    group_by(Hverfi = matssvaedi, "Tegund eigna" = teg_ein_s_i) %>% 
+
+    summarise( 
+        Meðaltal = mean(fermetraverd),
+        Staðalfrávik = sd(fermetraverd),
+        Miðgildi = median(fermetraverd),
+        Fjöldi = n()
+    ))
+```
+
+# Hluti 4 - Líkindafræði
+
+Líkur á því að tvær af þremur eignum séu einbýlishús, þar sem 20% eigna eru einbýlishús er $`r dbinom(2, 3, 0.2)`$ 
+svo eru líkurnar á því færri en tvær af þremur völdum eignum séu einbýlishús eru $`r round(pbinom(1,3,0.2),3)`$
+
+
+Gerum ráð fyrir að stærð einbýlishúsa í hverfinu fylgi normaldreifingu með meðaltal 170 fm og staðalfrávik 20 fm. 
+þá eru $`r round(1-pnorm(190,170,20),3)`$ líkur á að eign valin af handahófi sé stærri en $190m^2$
+
+
+Jonni ætlar að byggja einbýlishús í hverfinu og vill endilega að það verði í hópi 10% stærstu einbýlishúsa í hverfinu. 
+Þá þarf húsið að vera $`r round(qnorm(0.9,170,20),3)` m^2$

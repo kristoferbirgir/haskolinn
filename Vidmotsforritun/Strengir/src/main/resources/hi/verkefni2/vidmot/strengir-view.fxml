@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox alignment="CENTER" prefHeight="250.0" prefWidth="500.0" spacing="5.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="hi.verkefni2.vidmot.StrengirController">
+    <padding>
+        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+    </padding>
+   <children>
+      <HBox prefHeight="48.0" prefWidth="200.0" spacing="5.0">
+         <children>
+            <TextArea fx:id="fxLeitarord" onKeyTyped="#onSkrifa" prefHeight="48.0" prefWidth="305.0" promptText="Sláðu inn leitarorð" style="-fx-border-color: #D3D3D3;" />
+            <Label fx:id="fxStadsetningOrds" alignment="CENTER" contentDisplay="CENTER" prefHeight="48.0" prefWidth="111.0" style="-fx-background-color: #FAFAFA; -fx-border-color: grey; -fx-border-width: 1; -fx-padding: 5;" text="0" textAlignment="CENTER" />
+            <Button mnemonicParsing="false" onAction="#onLeit" prefHeight="48.0" prefWidth="101.0" text="Leita" />
+         </children>
+      </HBox>
+      <HBox prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+         <children>
+            <TextArea fx:id="fxTextinn" onKeyTyped="#onSkrifa2" prefHeight="300.0" prefWidth="400.0" promptText="Sláðu inn texta" style="-fx-border-color: #D3D3D3;" />
+            <Button mnemonicParsing="false" onAction="#onVistaTexta" prefHeight="200.0" prefWidth="101.0" text="Vista" />
+         </children>
+      </HBox>
+      <HBox prefHeight="48.0" prefWidth="200.0" spacing="5.0">
+         <children>
+            <Label fx:id="fxFjoldiOrda" alignment="CENTER" prefHeight="48.0" prefWidth="400.0" style="-fx-background-color: #FAFAFA; -fx-border-color: grey; -fx-border-width: 1; -fx-padding: 5;" text="0" />
+            <Button mnemonicParsing="false" onAction="#onTeljaOrd" prefHeight="48.0" prefWidth="101.0" text="Telja orð" />
+         </children>
+      </HBox>
+   </children>
+</VBox>

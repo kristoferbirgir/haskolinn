@@ -1,0 +1,21 @@
+;; Notkun: (myreviota)
+;; Fyrir: n er heiltala, n >= 0
+;; Gildi: Lisi allra heiltalna i, þannig að
+;;        0 < i <= n, í minnkandi röð, þ.e.
+;;        listinn (n n-1... 2 1).
+
+(define (myreviota n)
+  ;; Notkun: (help r x)
+  ;; Fyrir:  r er heiltala, 0 <= r <= n.
+  ;;         x er listinn (r r-1... 2 1).
+  ;; Gildi:  listinn (n n-1... 2 1).
+
+  (define (help r x)
+    (if (= r n)
+        x
+        (help (+ r 1) (cons (+ r 1) x))
+    )
+  )
+  (help 0 '())
+)
+  

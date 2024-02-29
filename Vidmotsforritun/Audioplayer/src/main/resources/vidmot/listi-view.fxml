@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
+            prefHeight="554.0" prefWidth="564.0"
+            xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="vidmot.ListiController">
+
+    <center>
+        <BorderPane prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <center>
+                <VBox alignment="CENTER" prefHeight="385.0" prefWidth="564.0" spacing="10.0"
+                      BorderPane.alignment="CENTER">
+                    <HBox alignment="CENTER" prefHeight="195.0" prefWidth="563.0">
+                        <ListView fx:id="fxListView" onMouseClicked="#onValidLag" prefHeight="191.0"
+                                  prefWidth="200.0"/>
+                    </HBox>
+                    <ImageView fx:id="fxValidLagMynd" fitHeight="58.0" fitWidth="184.0" pickOnBounds="true"
+                               preserveRatio="true"/>
+                    <ProgressBar fx:id="fxProgressBar" prefWidth="200.0" progress="0.0"/>
+                    <Button fx:id="fxPlayPauseButton" mnemonicParsing="false" onAction="#onPlayPause"
+                            text="Play/Pause">
+                        <graphic>
+                            <ImageView fitHeight="30.0" fitWidth="51.0" pickOnBounds="true" preserveRatio="true"/>
+                        </graphic>
+                    </Button>
+                </VBox>
+            </center>
+            <top>
+                <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+                    <Button mnemonicParsing="false" prefHeight="71.0" prefWidth="181.0" text="Lagalisti"
+                            style="-fx-font-size: 22;">
+                    </Button>
+                </HBox>
+            </top>
+        </BorderPane>
+    </center>
+
+    <bottom>
+        <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+            <Button fx:id="onHeim" mnemonicParsing="false" prefHeight="43.0" prefWidth="75.0" text="Heim"
+                    onAction="#onHeim">
+            </Button>
+        </HBox>
+    </bottom>
+</BorderPane>

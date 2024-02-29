@@ -1,0 +1,250 @@
+---
+title: "Seinna R verkefni - Fasteignaverkefni"
+author: "Kristófer Birgir Hjörleifsson (kbh15)"
+output: 
+  rmdformats::material
+---
+
+<style type="text/css">
+      body{
+      font-size: 14pt;
+      font-family: Times New Roman;
+}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = F, message = F)
+library(tidyverse)
+library(knitr)
+library(ggplot2)
+library(rmdformats)
+library(kableExtra)
+options(scipen = 999)
+```
+
+# Hluti 1 (10 %)
+
+## a) Lesum inn gögnin okkar:
+```{r}
+k <- read.table("https://ahj.hi.is/husnaedisverd_2017_21.csv", 
+                 encoding = "UTF-8", sep = ";", header =T, stringsAsFactors = T)
+```
+
+
+## b) Veljum þrjú hverfi: 280 = Fossvogur, 75 = Skerjafjörður og 180 = Grafarholt
+
+```{r}
+matssvaedi.nota <- c("280", "75", "180")
+
+k <- filter(k, matssvaedi%in%matssvaedi.nota)
+```
+
+## c) Kannið gerð breytanna og breytið gerð þeirra sem eru ekki af réttri gerð (ef einhverjar).
+```{r}
+# Könnum gerð breyta:
+str(k)
+```
+
+matssvaedi er int en við viljum breyta því í factor breytu.
+```{r}
+k <- mutate(k, matssvaedi = factor(matssvaedi))
+# Athugum hvort breytingin heppnaðist:
+str(k)
+```
+
+## d) Búið til nýja breytu í gagnarammanum ykkar sem inniheldur fermetraverð eignanna, nefnið breytuna fermetraverd.
+```{r}
+k$fermetraverd <- k$kaupverd/k$birtm2
+```
+
+## e) Búið til nýja breytu sem þið skulið kalla teg_eign_groft sem byggir á teg_eign breytunni. Breytan á að innihalda tvo flokka: Sérbýli (Einbýlishús, Parhús, Raðhús) og Íbúð (Íbúðareign). Ábending: notið fct_recode() aðferðina.
+```{r}
+
+k$teg_eign_groft <- fct_recode(k$teg_eign, "Sérbýli" = "Einbýlishús", 
+                             "Sérbýli" = "Parhús", "Sérbýli" = "Raðhús",
+                             "Íbúð" = "Íbúðareign")
+```
+
+## f) Endurnefnið hverfin ykkar með lýsandi nöfnum (ekki kóðanum sem notaður er í gögnunum).
+```{r}
+matsv <- fct_recode(k$matssvaedi, "Fossvogurinn" = "280", "Skerjó" = "75",
+           "Grafarholtið" = "180")
+k$matssvaedi <- matsv
+```
+
+## g) Takið slembiúrtak úr gagnasafninu ykkar af stærð 400. Geymið úrtakið ykkar í hlut sem ber heitið urtak.
+```{r}
+set.seed(5)
+urtak <- sample_n(k, 400)
+```
+
+
+# Hluti 2 (25 %)
+
+## h) Búið til töflu sem sýnir fjölda eigna í hverfunum þremur eftir gerð eigna (sérbýli eða íbúðir).
+```{r}
+tab1 <- table(urtak$teg_eign_groft, urtak$matssvaedi)
+kable(tab1, align = "c") %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = F,
+                font_size = 14,
+                position = "left")
+```
+
+## i) Búið til töflu sem sýnir hlutfall sérbýla og íbúða í hverfunum þremur. Það á s.s. að vera hægt að lesa hvert hlutfall sérbýla og íbúða er í hverju hverfi fyrir sig.
+```{r}
+tab2 <- prop.table(table(urtak$teg_eign_groft, urtak$matssvaedi), margin = 2)
+kable(tab2, digits = 3, align = "c", ) %>%
+  kable_styling(bootstrap_options = c("striped", "hover"),
+                full_width = F,
+                font_size = 14,
+                position = "left")
+```
+
+
+## j) Kannið með viðeigandi tilgátuprófi hvort samband sé á milli hverfa og gerð eigna (sérbýli og íbúða). Sýnið úttakið úr prófinu. Eru forsendur til að nota prófið uppfylltar? Setjið tilgáturnar fram, tilgreinið gildið á prófstærðinni, p-gildið og hvaða ályktun þið dragið.
+
+Notum kí-kvaðratpróf þar sem við erum að athuga hvort samband sé á milli hlutfalla þriggja þýða.
+```{r}
+chi_j <- chisq.test(table(urtak$teg_eign_groft, urtak$matssvaedi))
+chi_j
+```
+Gefum okkur villulíkur $\alpha$ = 0.05.
+
+Tilgáturnar eru 
+$$
+H_0: p_1 = p_2 = p_3 \\
+H_1: \text{hlutföllin eru ekki öll jöfn}
+$$
+
+Prófstærðin okkar er `r chi_j$statistic` og p-gildið er `r chi_j$p.value`.
+Þar sem p-gildið er minna en $\alpha$ þá höfnum við núlltilgátunni.
+
+Athugum núna hvort að forsendurnar fyrir því að nota þetta tilgátupróf hafi verið til staðar.
+
+```{r}
+chi_j$expected
+```
+
+Í töflunni hér að ofan fyrir væntanlega tíðni eru allar tölurnar stærri en 5 og því er í lagi að nota prófið.
+
+
+# Hluti 3 (25 %)
+
+## k) Kannið með viðeigandi tilgátuprófi hvort munur sé á meðfermetraverði fasteigna eftir því hvort þær séu sérbýli eða íbúðir. Setjið tilgáturnar fram, tilgreinið gildið á prófstærðinni, p-gildið og hvaða ályktun þið dragið.
+
+Notum tvíhliða t-próf af því að við erum að athuga mun á meðaltali tveggja stórra þýða.
+```{r}
+t_test1 <- t.test(urtak$fermetraverd ~ urtak$teg_eign_groft)
+t_test1
+```
+
+Tilgáturnar eru:
+$$
+H_0: \mu_1 - \mu_2 = \delta \\
+H_1: \mu_1 - \mu_2 \ne \delta
+$$
+Gildið á prófstærðinni er: `r round(t_test1$statistic, 3)` og p-gildið er `r round(t_test1$p.value, 3)`. Þar sem p-gildið er stærra en $\alpha$ þá getum við ekki hafnað $H_0$ og drögum því enga ályktun.
+
+## l) Búið til nýja breytu, staerd01, sem gefur til kynna hvort eignir séu stærri eða minni en 150 fermetrar (það skiptir ekki máli í hvorum flokknum 150 fermetra eignir lenda).  Kallið flokkinn með stærri eignunum Stærri og minni eignunum Minni. Ábending: notið ifelse() til að búa til breytuna.
+```{r}
+urtak$staerd01 <- ifelse(urtak$birtm2 > 150, "Stærri", "Minni")
+```
+
+## m) Kannið með viðeigandi tilgátuprófi hvort munur sé á meðfermetraverði fasteigna eftir því hvort þær séu stærri eða minni en 150 fermetrar. Setjið tilgáturnar fram, tilgreinið gildið á prófstærðinni, p-gildið og hvaða ályktun þið dragið.
+
+Athugum fyrst með viðeigandi prófi hvort dreifnin á meðalfermetraverðinu sé svipuð á milli flokkana
+```{r}
+lm <- var.test(urtak$fermetraverd ~ urtak$staerd01)
+lm
+```
+Miðað við að p-gildið úr fyrrgreindu prófi er `r lm$p.value` sem er minna en $\alpha$ = 0.05 að þá getum við ályktað að dreifnin sé ólík.
+
+Þá framkvæmum við tvíhliða t-próf til að athuga hvort munur sé á meðalfermetraverði fasteigna eftir því hvort þær séu stærri eða minni en 150 fermetrar.
+
+```{r}
+t_test2 <- t.test(urtak$fermetraverd ~ urtak$staerd01)
+t_test2
+```
+Tilgáturnar eru:
+$$
+H_0: \mu_1 - \mu_2 = \delta \\
+H_1: \mu_1 - \mu_2 \ne \delta
+$$
+Gildið á prófstærðinni er: `r round(t_test2$statistic, 3)` og p-gildið er `r t_test2$p.value`. Þar sem p-gildið er stærra en $\alpha$ þá getum við ekki hafnað $H_0$ og drögum því ekki ályktun að það sé munur á fermetraverði íbúða eftir því hvort þær séu stærri eða minni en 150 fermetrar.
+
+
+# Hluti 4 (30%)
+
+## n) Teiknið viðeigandi mynd af breytunum fermetraverd og matssvaedi.
+```{r}
+ggplot(urtak, aes(x = matssvaedi, y = fermetraverd)) + geom_boxplot() + xlab('Hverfi') + ylab('Fermetraverð')
+```
+
+
+## o) Kannið með viðeigandi tilgátuprófi hvort munur sé á meðalfermetraverði fasteigna í hverfunum þremur. Sýnið úttakið úr prófinu. Setjið tilgáturnar fram, tilgreinið gildið á prófstærðinni, p-gildið og hvaða ályktun þið dragið. Segði nokkur orð um hvort forsendur tilgátuprófsins séu uppfylltar. Þið þurfið ekki að prófa það með tilgátuprófi, nóg er að notast við myndrit (t.d. myndina í lið n).
+
+Til að athuga hvort munur sé á meðaltali fleiri en tveggja hópa er nauðsynlegt að nota fervikagreiningu.
+Á myndinni sem við teiknuðum í lið n) er hægt að sjá að dreifnin á fermetraverðinu er nokkuð svipuð á milli hverfa og því eru forsendurnar fyrir því að nota fervikagreiningu uppfylltar.
+
+```{r}
+fervik <- aov(fermetraverd ~ matssvaedi, data = urtak)
+a_fervik <- anova(fervik)
+a_fervik
+```
+```{r, echo=FALSE}
+fgildi1 <- (a_fervik$`F value`)[1]
+pgildi1 <- (a_fervik$`Pr(>F)`)[1]
+```
+
+Tilgáturnar eru:
+$$
+H_0: \mu_1 = \mu_2 = \mu_3 \\
+H_1: \text{A.m.k eitt meðaltal er frábrugðið hinum}
+$$
+Gildið á prófstærðinni er `r round(fgildi1, 3)` og p-gildið er `r round(pgildi1, 5)`. Fyrst að prófstærðin er greinilega stærri en p-gildið að þá höfnum við $H_0$ og ályktum að a.m.k eitt meðaltal sé frábrugðið hinum.
+
+## p) Teiknið viðeigandi mynd af breytunum birtm2 og kaupverd. Segið með nokkrum orðum hvort þið teljið viðeigandi að nota einfalt línulegt aðhvarf til að lýsa sambandinu á milli breytanna.
+
+
+```{r}
+ggplot(urtak, aes(x = birtm2,y = kaupverd)) + geom_point() + xlab("Stærð í fermetrum") + ylab("Kaupverð í þúsundum króna")
+```
+Athugum hvort að forsendur aðhvarfsgreiningar séu til staðar með því að nota leifarit
+```{r}
+p <- lm(kaupverd ~ birtm2, data = urtak)
+ggplot(data = p, aes(sample = .resid)) + stat_qq()
+```
+Þar sem leifaritið lítur klárlega út fyrir að vera línulegt má draga þá ályktun að leifarnar séu óháðar og normaldreifðar með sömu dreifni.
+
+Þess vegna eru forsendur þess að nota línulega aðhvarfsgreiningu til staðar.
+Svona lítur myndin út með línulegu aðhvarfsgreiningunni:
+```{r}
+ggplot(urtak, aes(x = birtm2,y = kaupverd)) + geom_point() + xlab("Stærð í fermetrum") + ylab("Kaupverð í þúsundum króna") + geom_smooth(method='lm', se = F)
+```
+
+
+
+
+## q) Smíðið einfalt aðhvarfslíkan sem lýsir sambandi stærðar og kaupverðs eigna. Með líkaninu á að vera hægt að spá fyrir um kaupverð úr frá stærð. Tilgreinið í texta hvert matið á skurðpunktinum og hallatölunni eru ásamt skýringarhlutfallinu (notið klumpakommur). Segið í örfáum orðum hvað hallatalan segir okkur í þessu tilviki.
+```{r}
+q <- lm(kaupverd ~ birtm2, data = urtak)
+q
+skurdp <- q$coefficients[1]
+hallat <- q$coefficients[2]
+qsum <- summary(q)
+qsum
+```
+Mat á skurðpunkti er `r round(skurdp,1)` og mat á hallatölu er `r round(hallat, 2)`.
+Skýringarhlutfallið er `r round(qsum$r.squared, 4)`.
+Miðað við að hallatalan er jákvæð getum við dregið þá ályktun að því stærri sem fasteignin er, því hærra verður kaupverðið.
+
+Nánar tiltekið: þegar stærð íbúðar hækkar um 1 fm að þá má álykta að kaupverðið muni hækka um sirka `r round(hallat,0)` þúsund krónur.
+
+
+
+
+
+
+
+

@@ -1,0 +1,17 @@
+;; Notkun: (myfoldl f u x)
+;; Fyrir: f er tvíundarfall, þ.e. fall
+;;        sem tekur tvö viðföng af einhverju
+;;        tagi, x er listin (x1 .. xN) af því
+;;        tagi og u er gildi af því tagi.
+;; Gildi: ( f ( f .. ( f ( f u x1 ) x2 ) .. ) xN ).
+
+(define (myfoldl f u x)
+  (if (null? x)
+      u
+      (myfoldl f(f u (car x)) (cdr x))
+  )
+)
+
+(myfoldl - 3 '(1 2)) ;; returns 0.
+(myfoldl(lambda(a b)(cons b a )) '() '(1 2 3))
+;;  Returns (3 2 1).
