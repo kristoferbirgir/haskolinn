@@ -1,2 +1,3 @@
-# haskolinn
-Verkefni og ehv fyrir gitttiðð 
+# Háskóli Íslands
+
+Verkefni og ehv
